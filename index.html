@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat application</title>
+    <style>
+        body{
+            height: 100vh;
+            background:linear-gradient(rgb(75, 128, 139),rgb(32, 105, 139),rgb(3, 74, 95));
+        }
+        .chat-box {
+            background-color: rgb(106, 107, 104);
+            width: 600px;
+            height: 500px;
+            margin: auto;
+        }
+
+        .logo {
+            width: 100%;
+            background-color:coral;
+            font-size: 30px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .container {
+            width: 100%;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .message {
+            background-color: aqua;
+            width: 30%;
+            padding: 10px;
+            margin: 5px 2px;
+            border-radius: 5px;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            border: 1px solid black;
+            font-weight: bold;
+        }
+
+        .right {
+            float: right;
+            clear: both;
+        }
+
+        .left {
+            float: left;
+            clear: both;
+        }
+
+        .text-area {
+            display: flex;
+            margin-top: 0px;
+        }
+
+        .text-area textarea {
+            width: 80%;
+            box-shadow: 2px;
+            padding: 10px;
+            border: 1px solid black;
+        }
+
+        .text-area button {
+            width: 20%;
+            background-color: coral;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        @media(max-width:560px){
+            .chat-box{
+               max-height: 100%;
+                width: 100%;
+                margin-top: 100px;
+            }
+            .text-area button{
+                width: 60%;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    <section class="chat-box">
+        <div class="logo">
+            <h3>Chatter</h3>
+        </div>
+        <div class="container">
+        </div>
+
+        <div class="text-area">
+            <textarea placeholder="Type message" id="text"></textarea>
+            <button class="btn" id="btn">Send</button>
+        </div>
+        </div>
+
+    </section>
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const textarea = document.getElementById('text');
+        const messageArea = document.querySelector('.container');
+        const btn = document.getElementById('btn');
+
+
+        const append = (message, position) => {
+            var aalu = document.createElement("div")
+            aalu.innerText = message;
+            aalu.classList.add("message");
+            aalu.classList.add(position);
+            messageArea.append(aalu)
+        }
+        btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            socket.emit('send', textarea.value)
+            append(`You :${textarea.value}`, "right")
+            textarea.value = ''
+        })
+        let name = prompt("Enter your name to join");
+        socket.emit('new-user-joined', name);
+        socket.on('user-joined', data => {
+            append(`${data} is Joined chat`, "right");
+        })
+        socket.on('receive', data => {
+            append(`${data.name} : ${data.message}`, "left");
+        })
+        socket.on('left',name=>{
+            append(`${name} is left chat`,"left");
+        })
+
+    </script>
+</body>
+
+</html>
